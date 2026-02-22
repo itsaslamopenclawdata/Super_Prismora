@@ -52,6 +52,32 @@ poetry run uvicorn services.booking.app:app --reload --port 8006
 
 ## API Documentation
 
-Once running, access interactive API docs at:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+### Interactive Documentation
+
+Each service provides interactive API documentation when running:
+
+| Service | Swagger UI | ReDoc |
+|---------|-----------|-------|
+| Image | http://localhost:8001/docs | http://localhost:8001/redoc |
+| Notification | http://localhost:8002/docs | http://localhost:8002/redoc |
+| Search | http://localhost:8003/docs | http://localhost:8003/redoc |
+| Analytics | http://localhost:8004/docs | http://localhost:8004/redoc |
+| Marketplace | http://localhost:8005/docs | http://localhost:8005/redoc |
+| Booking | http://localhost:8006/docs | http://localhost:8006/redoc |
+
+### Complete API Documentation
+
+For comprehensive API documentation including all endpoints, request/response schemas, and examples, see:
+
+- **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)** - Complete REST API documentation
+- **[openapi.yaml](./openapi.yaml)** - OpenAPI 3.0 specification
+- **Kong API Gateway** - See [kong/README.md](./kong/README.md) for gateway configuration
+
+### Key Features
+
+- **OpenAPI/Swagger** - Auto-generated documentation for all services
+- **Type-safe** - Pydantic models for request/response validation
+- **Async support** - FastAPI's async/await capabilities
+- **Middleware** - CORS, rate limiting, error handling, request logging
+- **Health checks** - `/health` endpoint on all services
+- **Docker support** - Containerized deployment with Dockerfile

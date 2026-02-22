@@ -1,0 +1,409 @@
+openapi: 3.0.3
+info:
+  title: PhotoIdentifier Backend Services API
+  description: |
+    REST API for the PhotoIdentifier platform's backend microservices.
+    
+    This OpenAPI specification covers all 6 services:
+    - Image Service (upload & processing)
+    - Notification Service (email, SMS, push)
+    - Search Service (Elasticsearch)
+    - Analytics Service (event tracking)
+    - Marketplace Service (products, orders)
+    - Booking Service (telehealth appointments)
+  version: 1.0.0
+  contact:
+    name: PhotoIdentifier Team
+    url: https://github.com/itsaslamopenclawdata/Super_Prismora
+
+servers:
+  - url: http://localhost:8000
+    description: Development server (via Kong)
+  - url: http://localhost:8001
+    description: Image Service (direct)
+  - url: http://localhost:8002
+    description: Notification Service (direct)
+  - url: http://localhost:8003
+    description: Search Service (direct)
+  - url: http://localhost:8004
+    description: Analytics Service (direct)
+  - url: http://localhost:8005
+    description: Marketplace Service (direct)
+  - url: http://localhost:8006
+    description: Booking Service (direct)
+
+tags:
+  - name: Health
+    description: Service health checks
+  - name: Images
+    description: Image upload and processing
+  - name: Notifications
+    description: Email, SMS, and push notifications
+  - name: Search
+    description: Elasticsearch-powered search
+  - name: Analytics
+    description: Event tracking and analytics
+  - name: Marketplace
+    description: Products, orders, and shopping cart
+  - name: Bookings
+    description: Telehealth appointment bookings
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Check service health
+      description: Returns health status for the service
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service:
+                    type: string
+                    example: "image"
+                  status:
+                    type: string
+                    example: "healthy"
+
+  /api/v1/images/upload:
+    post:
+      tags: [Images]
+      summary: Upload an image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageUploadResponse'
+
+  /api/v1/images/{filename}:
+    get:
+      tags: [Images]
+      summary: Get an image file
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Image file
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+
+  /api/v1/notifications/email:
+    post:
+      tags: [Notifications]
+      summary: Send an email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+      responses:
+        '201':
+          description: Email queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+
+  /api/v1/search/:
+    get:
+      tags: [Search]
+      summary: Search indexed documents
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: document_type
+          in: query
+          schema:
+            type: string
+        - name: tags
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /api/v1/analytics/track:
+    post:
+      tags: [Analytics]
+      summary: Track an analytics event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '201':
+          description: Event tracked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "tracked"
+                  event_type:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/v1/marketplace/products:
+    get:
+      tags: [Marketplace]
+      summary: List products
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: available_only
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
+    post:
+      tags: [Marketplace]
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+  /api/v1/bookings/professionals:
+    get:
+      tags: [Bookings]
+      summary: List healthcare professionals
+      parameters:
+        - name: specialization
+          in: query
+          schema:
+            type: string
+        - name: available_only
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of professionals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Professional'
+
+components:
+  schemas:
+    ImageUploadResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        original_filename:
+          type: string
+        size:
+          type: integer
+        width:
+          type: integer
+        height:
+          type: integer
+        format:
+          type: string
+        url:
+          type: string
+
+    EmailRequest:
+      type: object
+      required: [to, subject, body]
+      properties:
+        to:
+          type: string
+          format: email
+        subject:
+          type: string
+        body:
+          type: string
+        html_body:
+          type: string
+        priority:
+          type: string
+          enum: [low, normal, high]
+          default: normal
+
+    NotificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+        recipient:
+          type: string
+        message:
+          type: string
+
+    SearchResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        took:
+          type: number
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              type:
+                type: string
+              score:
+                type: number
+              source:
+                type: object
+
+    Event:
+      type: object
+      required: [event_type]
+      properties:
+        event_type:
+          type: string
+        user_id:
+          type: string
+        session_id:
+          type: string
+        properties:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        category:
+          type: string
+        image_url:
+          type: string
+        available:
+          type: boolean
+        stock:
+          type: integer
+
+    ProductCreate:
+      type: object
+      required: [name, description, price, category, stock]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        category:
+          type: string
+        image_url:
+          type: string
+        stock:
+          type: integer
+
+    Professional:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        specialization:
+          type: string
+        credentials:
+          type: string
+        bio:
+          type: string
+        hourly_rate:
+          type: number
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
