@@ -12,6 +12,12 @@ from app.models.collectibles import (
     CardIdentification,
     BanknoteIdentification
 )
+from app.models.health_fitness import (
+    CaloIdentification,
+    FruitIdentification,
+    LazyFitIdentification,
+    MuscleFitIdentification
+)
 
 __all__ = [
     "User",
@@ -27,4 +33,8 @@ __all__ = [
     "VinylIdentification",
     "CardIdentification",
     "BanknoteIdentification",
+    "CaloIdentification",
+    "FruitIdentification",
+    "LazyFitIdentification",
+    "MuscleFitIdentification",
 ]
