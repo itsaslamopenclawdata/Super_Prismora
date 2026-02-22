@@ -1,0 +1,33 @@
+# Backend Requirements - Track 14: Security, Compliance & Trust
+
+# Existing dependencies
+sqlalchemy==2.0.25
+alembic==1.13.1
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Track 14.1: Rate Limiting and Bot Protection
+redis==5.0.1
+
+# Track 14.2: Secrets Management Integration
+boto3==1.34.49
+botocore==1.34.49
+
+# Track 14.3: Privacy, Compliance & Content Moderation
+email-validator==2.1.0
+
+# Track 14.4: Security Policy Enforcement
+cryptography==41.0.7
+pyjwt==2.8.0
+passlib==1.7.4
+python-dateutil==2.8.2
+
+# Logging and monitoring
+structlog==24.1.0
+
+# Testing (existing)
+pytest==7.4.4
+pytest-asyncio==0.23.3
+httpx==0.26.0
