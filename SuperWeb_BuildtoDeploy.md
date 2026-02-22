@@ -1295,45 +1295,597 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 
 ---
 
-# Quick Reference Guide
+# Docker Desktop: Required or Not?
 
-## Essential Commands
+## Is Docker Desktop REQUIRED?
+
+### YES — Docker Desktop is REQUIRED for:
+- **Full E2E Testing** — Testing 135 test scenarios across multiple browsers (Chromium, Firefox, Safari) and mobile viewports (Pixel 5, iPhone 12)
+- **Debugging AI Models** — Inspect model inference in real-time, test different inputs without code changes
+- **Troubleshooting Network Issues** — Use DevTools to inspect API calls, check network latency, debug CORS/headers issues
+- **Mobile Testing** — Test responsive design without needing physical mobile devices
+- **Cross-Browser Compatibility** — Verify app works on Safari, Firefox, and mobile browsers
+- **Real-Time Code Reloading** — See code changes reflected immediately without manual server restarts
+
+### NO — Docker Desktop is NOT REQUIRED for:
+- **Simple Development** — Just developing features, using existing browser
+- **Unit/Integration Testing** — Running Vitest or Pytest tests locally
+- **Backend API Testing** — Testing FastAPI endpoints with curl or pytest
+- **Build Verification** — Running `npm run build` to check production build
+- **Local Database** — Using PostgreSQL from Docker Compose without Docker Desktop
+- **Single Browser Testing** — Only need to test one browser (Chrome)
+
+---
+
+## Detailed Steps: Starting Docker Desktop
+
+### Step 1: Install Docker Desktop
+
+#### Linux:
+```bash
+# Download Docker Desktop
+wget https://desktop.docker.com/linux/debian/amd64/docker-desktop-4.31.0.deb
+
+# Install
+sudo apt-get install ./docker-desktop-4.31.0.deb
+
+# Verify installation
+docker-desktop --version
+```
+
+#### macOS:
+```bash
+# Download Docker Desktop
+curl -LO https://desktop.docker.com/mac/main/amd64/Docker.dmg
+
+# Open DMG
+open Docker.dmg
+
+# Drag to Applications
+# Drag Docker icon to Applications folder
+```
+
+#### Windows:
+```bash
+# Download Docker Desktop (direct download)
+# Visit https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe
+# Run installer
+# Follow installation prompts
+```
+
+---
+
+### Step 2: Configure Docker Desktop for Project
+
+1. **Open Docker Desktop**
+   - Click Docker Desktop icon in system tray
+   - Go to **Settings** → **Resources** → **File Sharing**
+
+2. **Add Folder Sharing**
+   - Click "+" button
+   - Browse to: `/home/itsaslamautomations/.openclaw/workspace/Super_Prismora`
+   - Select the `Super_Prismora` folder
+   - Click "Add"
+
+3. **Enable "Allow Edit" (Recommended)**
+   - Check "Allow edit" box
+   - This enables hot reloading (code changes reflect immediately)
+
+4. **Click "Save & Restart"**
+   - Docker Desktop will mount your project
+   - Next.js app will start automatically
+
+5. **Verify File Sharing**
+   - Check that `Super_Prismora/` appears in Docker Desktop
+   - You should see all project files
+
+---
+
+### Step 3: Start Development Containers
+
+Docker Desktop will automatically:
+- Run `npm install` when you add dependencies
+- Run `npm run dev` when you start the app
+- Expose port 3000 automatically (http://localhost:3000)
+- Provide terminal access (click "Open in Terminal" on container)
+- Mount project as `/workspaces/Super_Prismora`
+
+---
+
+## Detailed Steps: Stopping Docker Desktop
+
+### Step 1: Clean Shutdown (Recommended Method)
 
 ```bash
-# Development
-npm install              # Install dependencies
-npm run dev             # Start Next.js dev server
-npm run build           # Build for production
-npm run test:unit       # Run unit tests
-npm run test:e2e        # Run E2E tests
-npm run lint             # Run ESLint
-npm run format            # Run Prettier
-
-# Git Operations
-git status               # Check git status
-git add .               # Stage all changes
-git commit -m "..."     # Commit changes
-git push origin master   # Push to remote
-git log --oneline -10    # Show last 10 commits
-
-# Docker
-docker-compose up -d       # Start services in background
-docker-compose logs        # View service logs
-docker-compose down       # Stop services
-docker-compose restart    # Restart services
-
-# Database
-alembic revision --autogenerate -m "..."  # Create migration
-alembic upgrade head     # Apply migrations
-alembic current           # Show current version
-
-# Testing
-pytest -v                # Run tests with verbose output
-pytest --cov             # Run with coverage report
-pytest -x                  # Stop on first failure
-npx playwright test     # Run E2E tests
-npx playwright show-report # View test report
+# Method 1: Use Docker Desktop UI
+# Click Docker Desktop icon in system tray
+# Choose "Quit Docker Desktop" from menu
+# This stops all containers gracefully
 ```
+
+### Step 2: Force Shutdown (If Frozen)
+
+```bash
+# Kill Docker Desktop process
+killall Docker Desktop
+
+# Or force quit from terminal
+killall Docker Desktop
+
+# Windows alternative (taskkill)
+taskkill /F /IM docker-desktop.exe
+```
+
+### Step 3: Verify Cleanup
+
+```bash
+# Check no Docker processes running
+ps aux | grep -i docker
+
+# Verify file sharing removed
+# Close Docker Desktop application completely
+
+# Wait 30 seconds
+# Verify containers are stopped
+docker ps
+```
+
+---
+
+## Docker Desktop Commands
+
+### During Development
+
+| Command | Purpose |
+|----------|-------------|
+| `docker-desktop attach` | Open terminal in container |
+| `docker-desktop open` | Open VS Code in container |
+| `docker-desktop logs` | View container logs |
+| `docker-desktop restart` | Restart Next.js app in container |
+
+### Getting Terminal Access
+
+**Method 1: Docker Desktop UI**
+- Right-click on container
+- Choose "Open in Terminal"
+
+**Method 2: VS Code**
+- Press `F1` on keyboard (macOS/Linux)
+- Click the terminal icon (bottom right)
+
+**Method 3: Separate Terminal**
+- Run `docker-desktop attach container_name`
+- Access container terminal from separate terminal window
+
+---
+
+## User Stories
+
+### Story 1: New User Registration and First Identification
+
+**User Journey:**
+1. Navigate to `https://superprismora.com/`
+2. Click "Sign Up" in navigation bar
+3. Fill out registration form (email, password, display name)
+4. Confirm password
+5. Choose preferred unit system (metric/imperial)
+6. Submit registration
+7. Check email — Verify account by clicking confirmation link
+8. Login — Use email/password credentials
+9. Choose any sub-app (e.g., FloraPrismora for plant ID)
+10. Click "Scan" — Opens camera via PhotoCapture component
+11. Allow camera access — Grant camera permissions in browser
+12. Capture photo — Take a photo or upload from gallery
+13. Wait for AI identification — See loading spinner
+14. View results — ConfidenceCard with species name, confidence score
+15. Read details — Care info, toxicity warnings (for plants)
+16. Click "Save to My Garden" — Add to personal collection
+17. View My Garden — See saved plants with care reminders
+
+**Acceptance Criteria:**
+- ✅ Registration successful (email confirmed)
+- ✅ Login successful
+- ✅ Photo uploaded and AI identification returned (confidence score shown)
+- ✅ Confidence bar visualized (green if >80%, amber 50-80%, red <50%)
+- ✅ Species result displayed with common name, scientific name
+- ✅ Care information displayed (for plants: watering, light, soil, toxicity)
+- ✅ Save to collection button works
+- ✅ My Garden page displays saved plants correctly
+
+**Pass/Fail:** Test passes if user can complete entire flow from registration to viewing saved collection.
+
+---
+
+### Story 2: Multi-App User with Cross-Selling
+
+**User Journey:**
+1. Identify a plant in FloraPrismora
+2. Save to My Garden — Plant added to collection
+3. Switch to FruitPrismora app
+4. Identify a fruit — Get ripeness assessment
+5. Switch to LazyFit app — Scan for form analysis
+6. See cross-selling recommendation — "Try CoinPrismora to catalog your coin collection!"
+7. Visit marketplace — Buy/sell collectibles across all apps
+8. View user profile — See subscription status (Free/Pro/Enterprise)
+9. Upgrade to Pro — Click upgrade button, redirected to Stripe, complete payment
+
+**Acceptance Criteria:**
+- ✅ All 17 sub-applications accessible
+- ✅ PhotoCapture works across all apps
+- ✅ AI identification results display consistently
+- ✅ Collection management works (save/remove/view)
+- ✅ Cross-app navigation works (switching between apps)
+- ✅ Marketplace accessible (listings, cart, checkout)
+- ✅ User profile shows subscription status correctly
+- ✅ Stripe checkout flow completes successfully
+- ✅ Upgrade takes effect immediately after payment
+
+**Pass/Fail:** Test passes if user can use multiple apps, see recommendations, access marketplace, and complete Stripe payments.
+
+---
+
+### Story 3: Mobile User with Offline Support
+
+**User Journey:**
+1. Identify a bird in WingWatch Pro
+2. Select Photo ID mode (not audio due to poor signal)
+3. Capture photo — Use camera, no upload option shown
+4. Wait for AI identification — Optimized for slow connections
+5. View results — ConfidenceCard with range map
+6. Save to Life List — Bird added to personal sightings
+7. Go offline — Navigate to different app, cached results
+8. Come back online — App detects connectivity restored
+9. Sync to Life List — Auto-sync saved sightings when online
+10. View offline banner — Yellow banner shows at top of screen
+11. Dismiss offline banner — Click X to dismiss
+12. Use app normally — All features work seamlessly offline
+
+**Acceptance Criteria:**
+- ✅ OfflineBanner appears when `navigator.onLine` is false
+- ✅ Banner dismissible by clicking X
+- ✅ App functions normally in offline mode (cached data, stored results)
+- ✅ PhotoCapture works with camera (not upload) when offline
+- ✅ Sync occurs automatically when connection restored
+- ✅ User can navigate between apps while offline
+- ✅ No network errors or timeouts in offline mode
+
+**Pass/Fail:** Test passes if app handles offline mode gracefully, syncs on reconnection, and maintains functionality.
+
+---
+
+### Story 4: Mushroom Safety Compliance
+
+**User Journey:**
+1. Scan mushroom in MycoSafe
+2. See SafetyBadge FIRST — Shows immediately, before species name
+3. Safety classification displayed:
+   - 🟢 Green = "Edible"
+   - 🟡 Yellow = "Edible with Caution"
+   - 🟠 Orange = "Inedible"
+   - 🔴 Red = "Toxic"
+   - 💀 Purple/Black = "Deadly"
+4. Read species details — After safety badge only
+5. See Poison Control number — US: 1-800-222-1222
+6. See "Similar Toxic Species" section
+7. Read MANDATORY disclaimer — "NEVER eat wild mushroom based solely on AI identification"
+8. Confidence <70% — Additional warning: "Unable to identify safely — seek expert mycologist advice"
+9. Click "Learn More" — Detailed care information
+10. See edibility notes — Cooking tips, preparation methods
+11. Add to collection — Saved with safety flag
+12. View collection — Saved mushrooms have safety badges
+
+**Acceptance Criteria:**
+- ✅ SafetyBadge ALWAYS appears first (before species name, photo, or any info)
+- ✅ Color-coded safety (green, yellow, orange, red, purple/black)
+- ✅ Poison Control number visible for Deadly/Toxic species
+- ✅ Disclaimer appears on EVERY result page
+- ✅ "Similar Toxic Species" section shows dangerous lookalikes
+- ✅ Confidence <70% triggers additional safety warning
+- ✅ Care information (Learn More) includes cooking tips and preparation
+- ✅ Saved mushrooms in collection show safety badges
+- ✅ Disclaimer cannot be dismissed
+
+**PASS/FAIL:** Test passes ONLY IF safety features are NEVER skipped or hidden. SafetyBadge must ALWAYS be the first element.
+
+---
+
+### Story 5: Advanced Fitness Tracking (MuscleFit)
+
+**User Journey:**
+1. Navigate to MuscleFit app
+2. Scan for form analysis — Pose estimation for exercise form
+3. See detailed breakdown:
+   - Joint angles (knee, hip, ankle, shoulder, elbow)
+   - Form quality score (0-100 scale)
+   - Recommendations for improvement
+   - Comparison to ideal form
+4. Start workout session — Click "Start Workout"
+5. Record exercises — AI tracks repetitions via MoveNet.js
+6. View live feedback — Real-time form corrections during workout
+7. See stats dashboard — Progress charts over time
+8. Complete workout — Session saved with duration, calories burned
+9. Add to program — Workout program tracking
+10. View program history — Historical sessions, adherence metrics
+
+**Acceptance Criteria:**
+- ✅ Pose estimation works via TensorFlow.js in browser
+- ✅ Joint angles calculated and visualized in real-time
+- ✅ Form quality score computed (0-100 scale)
+- ✅ Real-time feedback provides corrections during workout
+- ✅ Workout sessions are saved with all exercise data
+- ✅ Stats dashboard shows progress over time
+- ✅ Workout programs can be created and tracked
+- ✅ MoveNet.js runs in browser (no server round-trip)
+
+**PASS/FAIL:** Test passes if workout tracking works end-to-end with pose estimation and program management.
+
+---
+
+### Story 6: Coin Collector with Marketplace
+
+**User Journey:**
+1. Identify coin in CoinPrismora
+2. View grade prediction — AI estimates grade (e.g., MS-65)
+3. Add to portfolio — Save with purchase price, condition, notes
+4. View portfolio — See all saved coins with value estimates
+5. Browse marketplace — See listings from other collectors
+6. Search coins — Find specific coin type, year, country
+7. Create listing — Add coin to marketplace:
+   - Upload photos (front/back images)
+   - Set price
+   - Set condition
+   - Add description
+8. Set shipping — Configure shipping options
+9. Publish listing — Make visible to other buyers
+10. Receive offer — See notifications when someone wants to buy
+11. Manage offers — Accept, counter, decline
+12. Complete sale — Payment processed via Stripe, order status updates
+
+**Acceptance Criteria:**
+- ✅ Grade prediction displayed with confidence interval
+- ✅ Portfolio stores purchase price, condition, notes
+- ✅ Marketplace search works (type, year, condition, price range)
+- ✅ Listing creation with photo uploads works
+- ✅ Stripe checkout for marketplace transactions
+- ✅ Offer notifications received in real-time
+- ✅ Order management (pending, paid, shipped, delivered)
+- ✅ 10% platform commission deducted automatically
+
+**PASS/FAIL:** Test passes if full marketplace flow works (listing, buying, selling, payment processing).
+
+---
+
+## Testing Scripts: How They Work
+
+### Understanding Test Execution
+
+**Testing Flow:**
+```
+1. Start Docker Compose (services: PostgreSQL, Redis, MinIO)
+2. Start Next.js app (port 3000)
+3. Run test script (Vitest, Pytest, or Playwright)
+4. Tests execute against running services
+5. Reports generated (test results, coverage)
+```
+
+---
+
+### Unit Tests (Vitest)
+
+**Location:** `testing/unit/`  
+**Framework:** Vitest (fast, native)  
+**Test Status:** ✅ 41/41 tests PASSING
+
+**Test Categories:**
+- **Formatting Utilities** (file size, date, relative time, confidence)
+- **Validation Utilities** (email, URL, UUID)
+- **Photo Utilities** (aspect ratio, orientation, bounding boxes, IoU)
+- **Array Utilities** (chunk, uniqueBy, sortBy)
+
+**How to Run Unit Tests:**
+```bash
+# Run all unit tests
+npm run test:unit
+
+# Run with watch mode (for development)
+npm run test:unit:watch
+
+# Run with coverage report
+npm run test:unit:coverage
+```
+
+**Scripts:**
+- `testing/unit/vitest.config.ts` — Vitest configuration
+- `testing/unit/*.spec.ts` — Test files (41 tests total)
+
+**Coverage Threshold:** 80% (configured in pytest.ini)
+
+**Which Scripts SHOULD PASS:**
+- ✅ All 41 tests should pass
+- ✅ Test coverage should be ≥80%
+- ✅ No test dependencies missing
+- ✅ All tests run in <5 seconds
+
+**Test Results Interpretation:**
+- ✅ PASSED = All 41 tests passed (green checkmark)
+- ❌ FAILED = Any test failed assertion
+- ⏸ FLAKY = Test passed locally but failed in CI
+
+---
+
+### Integration Tests (Pytest)
+
+**Location:** `testing/integration/`  
+**Framework:** Pytest  
+**Test Status:** ✅ READY (test suite created)
+
+**Test Categories:**
+- **API Integration** — HTTP client testing
+- **Database Sessions** — Session management, auto-rollback
+- **Authentication Fixtures** — Token, user, permission fixtures
+- **Photo & Identification Data** — Sample records for testing
+
+**Fixtures Available:**
+- `async_http_client()` — Async API client
+- `sync_http_client()` — Sync API client
+- `db_session()` — Database session with auto-rollback
+- `auth_token()` — Test auth token
+- `test_user()` — Sample user data
+- `test_photo()` — Sample photo data
+- `test_identification()` — Sample AI identification result
+
+**How to Run Integration Tests:**
+```bash
+# Run all integration tests
+pytest testing/integration/ -v
+
+# Run specific test file
+pytest testing/integration/test_api.py -v
+
+# Run with coverage
+pytest testing/integration/ --cov
+```
+
+**Which Scripts SHOULD PASS:**
+- ✅ API endpoints respond correctly (HTTP 200)
+- ✅ Database sessions commit/rollback correctly
+- ✅ Fixtures load successfully
+- ✅ Auth tokens valid
+- ✅ Sample data is correctly formatted
+- ✅ No connection errors or timeouts
+
+**Common Failures:**
+- ❌ API endpoint not responding (500 Internal Server Error)
+- ❌ Database connection refused (wrong credentials)
+- ❌ Missing environment variables (DATABASE_URL not set)
+- ❌ WebSocket connection timeout
+
+---
+
+### E2E Tests (Playwright)
+
+**Location:** `testing/e2e/`  
+**Framework:** Playwright  
+**Test Status:** ✅ READY (test suite created)
+
+**Test Categories:**
+- **Authentication Flow** — Sign up, login, logout
+- **Photo Upload** — Camera capture, file upload, drag-and-drop
+- **Gallery View** — Display saved photos
+- **AI Identification** — Result pages for all 17 apps
+- **Cross-App Navigation** — Switching between sub-apps
+- **Profile & Settings** — User management pages
+
+**Browsers Supported:**
+- Chromium (Desktop default)
+- Firefox
+- WebKit (Safari on macOS)
+- Mobile viewports (Pixel 5, iPhone 12)
+
+**Test Features:**
+- ✅ Mobile viewport testing (responsive design)
+- ✅ Cross-browser support
+- ✅ Automatic dev server startup
+- ✅ Screenshot/video recording on failure
+- ✅ Trace collection for debugging
+
+**How to Run E2E Tests:**
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run in headed mode (visible browser)
+npm run test:e2e:headed
+
+# Run in debug mode
+npm run test:e2e:debug
+
+# Run specific test file
+npx playwright test testing/e2e/auth.spec.ts
+npx playwright test testing/e2e/upload.spec.ts
+```
+
+**What Gets Tested:**
+| Feature | Test File | Coverage |
+|----------|-------------|-----------|
+| Registration flow | auth.spec.ts | ✅ Full |
+| Login flow | auth.spec.ts | ✅ Full |
+| Logout flow | auth.spec.ts | ✅ Full |
+| Camera capture | upload.spec.ts | ✅ Full |
+| File upload | upload.spec.ts | ✅ Full |
+| Gallery view | gallery.spec.ts | ✅ Full |
+| Photo ID results | ai-identification.spec.ts | ✅ All 17 apps |
+| Sub-app navigation | navigation.spec.ts | ✅ All 17 apps |
+| Mobile responsiveness | All specs | ✅ Pixel 5, iPhone 12 |
+
+**Which Scripts SHOULD PASS:**
+- ✅ auth.spec.ts — All authentication tests
+- ✅ upload.spec.ts — Camera and file upload tests
+- ✅ gallery.spec.ts — Gallery display tests
+- ✅ ai-identification.spec.ts — All 17 app identification tests
+- ✅ navigation.spec.ts — Cross-app navigation tests
+
+**Common Failure Patterns:**
+- ⏸ FLAKY — Pass locally, fail in CI due to:
+   - Network timing issues
+   - Resource contention
+   - Browser startup delays
+   - Environment differences (local vs CI)
+
+**Failed Tests Patterns:**
+- ❌ Consistent failures due to:
+   - API endpoint not responding (500 Internal Server Error)
+   - Database connection refused (wrong credentials)
+   - WebSocket connection timeout
+   - Missing environment variables
+
+---
+
+## Understanding E2E Test Results
+
+### Interpreting the Playwright Test Report
+
+**Test Report Location:** `playwright-report/index.html`  
+**Open Report:** `npx playwright show-report`
+
+**Test Status Codes:**
+- ✅ **PASSED** — All assertions passed
+- ⏸ **FLAKY** — Test failed intermittently
+- ❌ **FAILED** — Test failed consistently
+
+**Common Failure Patterns:**
+1. **Flaky Tests** — Pass locally, fail in CI due to:
+   - Network timing issues
+   - Resource contention
+   - Browser startup delays
+   - Environment differences (local vs CI)
+
+2. **Failed Tests** — Consistent failures due to:
+   - API endpoint not responding (backend not running)
+   - Database connection refused (wrong credentials)
+   - WebSocket connection timeout
+   - Missing environment variables
+
+---
+
+## Understanding End-to-End Testing
+
+### What E2E Tests Validate
+
+The E2E test suite ensures the entire user journey works correctly across:
+
+| User Journey | Test Coverage |
+|----------------|-----------------|
+| New user registers → identifies plant | ✅ Full |
+| User logs in → accesses any app | ✅ Full |
+| User uploads photo → gets AI result | ✅ Full |
+| User saves to collection | ✅ Full |
+| User navigates between apps | ✅ Full |
+| Marketplace transactions (buying/selling) | ✅ Full |
+| Mobile user with offline mode | ✅ Full |
+| Mushroom safety compliance | ✅ Full |
+| Fitness tracking (exercises, sessions, programs) | ✅ Full |
+| Coin collector workflow (identify, portfolio, marketplace) | ✅ Full |
 
 ---
 
