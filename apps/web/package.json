@@ -13,17 +13,22 @@
     "clean": "rm -rf .next node_modules"
   },
   "dependencies": {
+    "@photoidentifier/types": "*",
+    "@photoidentifier/utils": "*",
+    "@stripe/stripe-js": "^8.8.0",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.97.0",
     "next": "14.2.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@photoidentifier/types": "*",
-    "@photoidentifier/utils": "*",
+    "stripe": "^20.3.1",
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/sdk-node": "^0.45.1",
     "@opentelemetry/auto-instrumentations-node": "^0.40.3",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.45.1",
     "@opentelemetry/sdk-metrics": "^1.18.1",
     "@opentelemetry/resources": "^1.18.1",
-    "@opentelemetry/semantic-conventions": "^1.18.1"
+    "@opentelemetry/semantic-conventions": "^1.18.1",
+    "prom-client": "^15.1.0"
   }
 }
