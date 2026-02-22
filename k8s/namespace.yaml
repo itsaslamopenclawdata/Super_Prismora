@@ -1,0 +1,10 @@
+---
+# Namespace for PhotoIdentifier Platform
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: photoidentifier
+  labels:
+    app: photoidentifier
+    environment: production
+    name: photoidentifier
