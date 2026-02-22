@@ -1,0 +1,65 @@
+---
+# Ingress for PhotoIdentifier Platform
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: photoidentifier-ingress
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - photoidentifier.com
+    - api.photoidentifier.com
+    secretName: photoidentifier-tls
+  rules:
+  - host: photoidentifier.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: photoidentifier-web
+            port:
+              number: 80
+  - host: api.photoidentifier.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: photoidentifier-web
+            port:
+              number: 80
+---
+# Certificate for TLS
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: photoidentifier-certificate
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+spec:
+  secretName: photoidentifier-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: photoidentifier.com
+  dnsNames:
+  - photoidentifier.com
+  - api.photoidentifier.com
