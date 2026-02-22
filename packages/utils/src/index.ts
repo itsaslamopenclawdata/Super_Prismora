@@ -12,6 +12,9 @@ import type {
   DeepPartial,
 } from '@photoidentifier/types';
 
+// Re-export environment utilities
+export * from './env';
+
 // ============================================================================
 // Formatting Utilities
 // ============================================================================
