@@ -21,6 +21,9 @@ export type { BadgeProps } from './components/Badge';
 export { Alert } from './components/Alert';
 export type { AlertProps } from './components/Alert';
 
+export { Avatar } from './components/Avatar';
+export type { AvatarProps } from './components/Avatar';
+
 // Photo Components
 export { PhotoCapture } from './components/PhotoCapture';
 export type { PhotoCaptureProps } from './components/PhotoCapture';
