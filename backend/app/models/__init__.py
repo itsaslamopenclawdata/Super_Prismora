@@ -18,6 +18,12 @@ from app.models.health_fitness import (
     LazyFitIdentification,
     MuscleFitIdentification
 )
+from app.models.pets_vehicles import (
+    DogIdentification,
+    CatIdentification,
+    VehicleIdentification,
+    FishIdentification
+)
 
 __all__ = [
     "User",
@@ -37,4 +43,8 @@ __all__ = [
     "FruitIdentification",
     "LazyFitIdentification",
     "MuscleFitIdentification",
+    "DogIdentification",
+    "CatIdentification",
+    "VehicleIdentification",
+    "FishIdentification",
 ]
