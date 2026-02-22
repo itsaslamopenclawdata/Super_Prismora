@@ -18,11 +18,23 @@ from app.models.health_fitness import (
     LazyFitIdentification,
     MuscleFitIdentification
 )
+from app.models.nutrition import (
+    Meal,
+    FruitLog,
+    WorkoutSession,
+    WorkoutProgram,
+    NutritionGoal,
+    FitnessProgress
+)
 from app.models.pets_vehicles import (
     DogIdentification,
     CatIdentification,
     VehicleIdentification,
     FishIdentification
+)
+from app.models.rock_identification import (
+    RockIdentification,
+    MineralIdentification
 )
 
 __all__ = [
@@ -43,8 +55,16 @@ __all__ = [
     "FruitIdentification",
     "LazyFitIdentification",
     "MuscleFitIdentification",
+    "Meal",
+    "FruitLog",
+    "WorkoutSession",
+    "WorkoutProgram",
+    "NutritionGoal",
+    "FitnessProgress",
     "DogIdentification",
     "CatIdentification",
     "VehicleIdentification",
     "FishIdentification",
+    "RockIdentification",
+    "MineralIdentification",
 ]
