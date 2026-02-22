@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  ai-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: photoidentifier-ai-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - TENSORFLOW_SERVING_URL=http://tensorflow-serving:8501
+      - ONNX_RUNTIME_URL=http://onnx-runtime:8000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RATE_LIMIT_ENABLED=true
+      - RATE_LIMIT_REQUESTS=100
+      - RATE_LIMIT_WINDOW=60
+      - CACHE_ENABLED=true
+      - CACHE_TTL=300
+      - LOG_LEVEL=info
+    depends_on:
+      - tensorflow-serving
+      - onnx-runtime
+      - redis
+    networks:
+      - ai-infra
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  ai-infra:
+    external: true

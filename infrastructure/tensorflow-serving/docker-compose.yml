@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  tensorflow-serving:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: photoidentifier-tfs
+    ports:
+      - "8500:8500"  # gRPC
+      - "8501:8501"  # REST API
+    environment:
+      - MODEL_BASE_PATH=/models
+    volumes:
+      - ./models:/models
+      - ./models.config:/etc/tensorflow-serving/models.config
+      - ./batching_parameters.txt:/etc/tensorflow-serving/batching_parameters.txt
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - ai-infra
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/v1/models"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  ai-infra:
+    driver: bridge

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  model-registry:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: photoidentifier-model-registry
+    ports:
+      - "8003:8003"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://photoidentifier:password@postgres:5432/photoidentifier
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=info
+    volumes:
+      - ./models:/models/storage
+    depends_on:
+      - postgres
+    networks:
+      - ai-infra
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  postgres:
+    image: postgres:16
+    container_name: photoidentifier-registry-db
+    environment:
+      - POSTGRES_USER=photoidentifier
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=photoidentifier
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - ai-infra
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+
+networks:
+  ai-infra:
+    external: true

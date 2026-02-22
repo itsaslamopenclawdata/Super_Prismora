@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhotoIdentifier Browser Models Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+
+        .upload-section.dragover {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+
+        .image-preview {
+            max-width: 400px;
+            max-height: 400px;
+            margin: 20px auto;
+            display: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .prediction-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .probability-bar {
+            flex: 1;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #00d4ff);
+            transition: width 0.5s ease;
+        }
+
+        .probability-text {
+            min-width: 60px;
+            text-align: right;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #dc3545;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f8d7da;
+            display: none;
+        }
+
+        .info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .backend-selector {
+            margin-bottom: 20px;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .performance {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .performance h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .performance p {
+            margin: 5px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 PhotoIdentifier Browser Models Demo</h1>
+
+        <div class="backend-selector">
+            <label for="backend">Select TensorFlow.js Backend:</label>
+            <select id="backend">
+                <option value="webgl">WebGL (Recommended)</option>
+                <option value="webgpu">WebGPU (Experimental)</option>
+                <option value="wasm">WASM</option>
+                <option value="cpu">CPU</option>
+            </select>
+        </div>
+
+        <div class="upload-section" id="dropZone">
+            <h2>📁 Upload an Image</h2>
+            <p>Drag and drop an image here, or click to select</p>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            <p class="info">Supports: JPG, PNG, GIF, WebP</p>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading model and processing image...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <img class="image-preview" id="imagePreview" alt="Preview">
+
+        <div class="results" id="results">
+            <h2>🔍 Classification Results</h2>
+            <div id="predictions"></div>
+        </div>
+
+        <div class="performance" id="performance">
+            <h3>⚡ Performance</h3>
+            <p><strong>Processing Time:</strong> <span id="processingTime"></span> ms</p>
+            <p><strong>Backend:</strong> <span id="backendUsed"></span></p>
+            <p><strong>Memory Used:</strong> <span id="memoryUsed"></span> MB</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+    <script>
+        let model = null;
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const resultsDiv = document.getElementById('results');
+        const predictionsDiv = document.getElementById('predictions');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        const backendSelect = document.getElementById('backend');
+
+        // Load model
+        async function loadModel() {
+            try {
+                const backend = backendSelect.value;
+                await tf.setBackend(backend);
+                await tf.ready();
+
+                model = await mobilenet.load({
+                    version: 2,
+                    alpha: 1.0
+                });
+
+                console.log('Model loaded successfully');
+                console.log('Backend:', tf.getBackend());
+            } catch (error) {
+                showError('Failed to load model: ' + error.message);
+            }
+        }
+
+        // Process image
+        async function processImage(imageElement) {
+            if (!model) {
+                showError('Model not loaded');
+                return;
+            }
+
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            resultsDiv.style.display = 'none';
+
+            try {
+                const startTime = performance.now();
+
+                // Classify image
+                const predictions = await model.classify(imageElement, 5);
+
+                const endTime = performance.now();
+                const processingTime = (endTime - startTime).toFixed(2);
+
+                // Display results
+                displayResults(predictions, processingTime);
+                document.getElementById('backendUsed').textContent = tf.getBackend();
+                document.getElementById('memoryUsed').textContent = (tf.memory().usedBytes / 1024 / 1024).toFixed(2);
+
+            } catch (error) {
+                showError('Error processing image: ' + error.message);
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // Display results
+        function displayResults(predictions, processingTime) {
+            predictionsDiv.innerHTML = '';
+
+            predictions.forEach(prediction => {
+                const probability = (prediction.probability * 100).toFixed(2);
+
+                const item = document.createElement('div');
+                item.className = 'prediction-item';
+                item.innerHTML = `
+                    <strong>${prediction.className}</strong>
+                    <div class="probability-bar">
+                        <div class="probability-fill" style="width: ${probability}%"></div>
+                    </div>
+                    <span class="probability-text">${probability}%</span>
+                `;
+                predictionsDiv.appendChild(item);
+            });
+
+            document.getElementById('processingTime').textContent = processingTime;
+            document.getElementById('performance').style.display = 'block';
+            resultsDiv.style.display = 'block';
+        }
+
+        // Show error
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            loadingDiv.style.display = 'none';
+        }
+
+        // Event listeners
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleFile(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        backendSelect.addEventListener('change', async () => {
+            loadingDiv.style.display = 'block';
+            await loadModel();
+            loadingDiv.style.display = 'none';
+        });
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                imagePreview.onload = () => processImage(imagePreview);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Initialize
+        loadModel();
+    </script>
+</body>
+</html>

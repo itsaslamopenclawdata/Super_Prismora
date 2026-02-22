@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  birdnet-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: photoidentifier-birdnet
+    ports:
+      - "8004:8004"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=info
+    volumes:
+      - ./audio:/audio/storage
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    restart: unless-stopped
+    networks:
+      - ai-infra
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  ai-infra:
+    external: true
