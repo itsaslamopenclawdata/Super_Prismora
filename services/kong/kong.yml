@@ -9,6 +9,18 @@ services:
         paths:
           - /api/v1/images
         strip_path: true
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 50
+          hour: 500
+          day: 5000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+          redis_database: 1
+          fault_tolerant: true
+          hide_client_headers: false
 
   - name: notification-service
     url: http://notification-service:8002
@@ -17,6 +29,16 @@ services:
         paths:
           - /api/v1/notifications
         strip_path: true
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 30
+          hour: 300
+          day: 3000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+          redis_database: 1
 
   - name: search-service
     url: http://search-service:8003
@@ -25,6 +47,16 @@ services:
         paths:
           - /api/v1/search
         strip_path: true
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 100
+          hour: 1000
+          day: 10000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+          redis_database: 1
 
   - name: analytics-service
     url: http://analytics-service:8004
@@ -33,6 +65,16 @@ services:
         paths:
           - /api/v1/analytics
         strip_path: true
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 200
+          hour: 2000
+          day: 20000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+          redis_database: 1
 
   - name: marketplace-service
     url: http://marketplace-service:8005
@@ -41,6 +83,16 @@ services:
         paths:
           - /api/v1/marketplace
         strip_path: true
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 60
+          hour: 600
+          day: 6000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+          redis_database: 1
 
   - name: booking-service
     url: http://booking-service:8006
@@ -49,8 +101,39 @@ services:
         paths:
           - /api/v1/bookings
         strip_path: true
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 40
+          hour: 400
+          day: 4000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+          redis_database: 1
 
-# Plugins Configuration
+  - name: ai-service
+    url: http://ai-service:8007
+    routes:
+      - name: ai-service-route
+        paths:
+          - /api/v1/ai
+        strip_path: true
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 20
+          hour: 200
+          day: 2000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+          redis_database: 1
+      - name: request-size-limiting
+        config:
+          allowed_payload_size: 25  # MB for AI uploads
+
+# Global Plugins Configuration
 plugins:
   # CORS plugin
   - name: cors
@@ -76,8 +159,10 @@ plugins:
       max_age: 3600
       exposed_headers:
         - X-Process-Time
+        - X-RateLimit-Limit
+        - X-RateLimit-Remaining
 
-  # Rate limiting
+  # Global rate limiting with Redis
   - name: rate-limiting
     config:
       minute: 100
@@ -86,20 +171,21 @@ plugins:
       policy: redis
       redis_host: redis
       redis_port: 6379
-      redis_database: 1
+      redis_database: 0
+      fault_tolerant: true
+      hide_client_headers: false
+      enforce_on_consumers: false
 
   # Request size limiting
   - name: request-size-limiting
     config:
-      allowed_payload_size: 10
+      allowed_payload_size: 10  # MB
 
-  # IP restriction (optional)
+  # IP restriction (deny bad actors, allow all by default)
   - name: ip-restriction
     config:
-      deny:
-        - 0.0.0.0/0  # Add blocked IPs here
       allow:
-        - 0.0.0.0/0  # Allow all (configure for production)
+        - 0.0.0.0/0  # Allow all (configure blocked IPs in production)
 
   # JWT authentication (for protected routes)
   - name: jwt
@@ -109,7 +195,7 @@ plugins:
       claims_to_verify:
         - exp
 
-  # Response rate limiting
+  # Response rate limiting (prevent abuse of responses)
   - name: response-ratelimiting
     config:
       minute: 200
@@ -119,6 +205,17 @@ plugins:
       redis_host: redis
       redis_port: 6379
       redis_database: 2
+      fault_tolerant: true
+
+  # Request transformer (add security headers)
+  - name: response-transformer
+    config:
+      add:
+        headers:
+          - X-Content-Type-Options:nosniff
+          - X-Frame-Options:DENY
+          - X-XSS-Protection:1; mode=block
+          - Strict-Transport-Security:max-age=31536000; includeSubDomains
 
   # Request logger
   - name: file-log
@@ -128,3 +225,22 @@ plugins:
 
   # Prometheus metrics
   - name: prometheus
+
+  # Bot detection plugin
+  - name: bot-detection
+    config:
+      allowed_bots:
+        - Googlebot
+        - Bingbot
+        - Slurp
+        - DuckDuckBot
+        - Baiduspider
+      block_spiders: true
+      block_scanners: true
+
+  # Request termination for blocked paths
+  - name: request-termination
+    config:
+      status_code: 403
+      content_type: application/json
+      body: '{"error": "Access denied"}'

@@ -1,15 +1,10 @@
-sqlalchemy==2.0.25
-alembic==1.13.1
-psycopg2-binary==2.9.9
-python-dotenv==1.0.0
-pydantic==2.5.3
-pydantic-settings==2.1.0
-
-# OpenTelemetry for APM and observability
+# OpenTelemetry Python SDK for backend services
 opentelemetry-api==1.22.0
 opentelemetry-sdk==1.22.0
 opentelemetry-exporter-otlp-proto-grpc==1.22.0
 opentelemetry-instrumentation==0.43b0
+opentelemetry-instrumentation-fastapi==0.43b0
+opentelemetry-instrumentation-flask==0.43b0
 opentelemetry-instrumentation-sqlalchemy==0.43b0
 opentelemetry-instrumentation-requests==0.43b0
 opentelemetry-instrumentation-redis==0.43b0
