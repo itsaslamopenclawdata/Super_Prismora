@@ -1,5 +1,9 @@
 # 🚀 SuperWeb PhotoIdentifier Platform — Complete Platform
 
+
+
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/e1357c24-8de8-41a2-b0ef-63962dada124" />
+
 ```
 ╔═══════════════════════════════════════════════════════════════════════╗
 ║                                                              ║
