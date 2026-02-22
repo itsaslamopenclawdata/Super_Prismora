@@ -38,6 +38,12 @@ class User(Base):
     # Relationships
     photos = relationship("Photo", back_populates="user", cascade="all, delete-orphan")
     collections = relationship("Collection", back_populates="user", cascade="all, delete-orphan")
+    meals = relationship("Meal", back_populates="user", cascade="all, delete-orphan")
+    fruit_logs = relationship("FruitLog", back_populates="user", cascade="all, delete-orphan")
+    workout_sessions = relationship("WorkoutSession", back_populates="user", cascade="all, delete-orphan")
+    workout_programs = relationship("WorkoutProgram", back_populates="user", cascade="all, delete-orphan")
+    nutrition_goals = relationship("NutritionGoal", back_populates="user", cascade="all, delete-orphan")
+    fitness_progress = relationship("FitnessProgress", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"
