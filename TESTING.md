@@ -16,6 +16,12 @@ This document provides an overview of the testing infrastructure for the PhotoId
 - **Location**: `tests/integration/`, `tests/unit/`
 - **Config**: `pytest.ini`
 
+### Playwright (E2E Tests)
+- **Framework**: Playwright for end-to-end testing
+- **Purpose**: Testing complete user flows in the browser
+- **Location**: `e2e/`
+- **Config**: `playwright.config.ts`
+
 ## Running Tests
 
 ### Vitest (Frontend)
@@ -65,10 +71,38 @@ pytest -n auto
 pytest -m "not slow"
 ```
 
+### Playwright (E2E)
+
+```bash
+# Install Playwright browsers
+npx playwright install
+
+# Run all E2E tests
+npm run test:e2e
+
+# Run tests with UI mode
+npm run test:e2e:ui
+
+# Run tests in headed mode (visible browser)
+npm run test:e2e:headed
+
+# Debug tests
+npm run test:e2e:debug
+
+# Run specific test file
+npx playwright test auth.spec.ts
+
+# Run tests in specific browser
+npx playwright test --project=chromium
+
+# View test report
+npx playwright show-report
+```
+
 ## Test Organization
 
 ```
-tests/
+tests/                         # Pytest tests (backend)
 ├── conftest.py              # Pytest fixtures and configuration
 ├── unit/                    # Unit tests
 │   └── test_utils.py       # Utility function tests
@@ -76,11 +110,18 @@ tests/
 │   └── test_api.py        # API endpoint tests
 └── __init__.py
 
-packages/utils/__tests__/    # Vitest unit tests
+packages/utils/__tests__/    # Vitest unit tests (frontend)
 ├── formatting.test.ts
 ├── validation.test.ts
 ├── photo.test.ts
 └── array.test.ts
+
+e2e/                          # Playwright E2E tests
+├── auth.spec.ts             # Authentication tests
+├── upload.spec.ts           # Photo upload tests
+├── gallery.spec.ts          # Photo gallery tests
+├── ai-identification.spec.ts # AI identification tests
+└── README.md               # Playwright documentation
 ```
 
 ## Test Markers

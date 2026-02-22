@@ -1,0 +1,417 @@
+---
+# ConfigMap for Grafana Provisioning - Datasources
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+    component: monitoring
+data:
+  datasources.yml: |
+    apiVersion: 1
+
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus:9090
+      isDefault: true
+      editable: true
+      jsonData:
+        timeInterval: 15s
+---
+# ConfigMap for Grafana Dashboards Provider
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-config
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+    component: monitoring
+data:
+  dashboards.yml: |
+    apiVersion: 1
+
+    providers:
+    - name: 'PhotoIdentifier'
+      orgId: 1
+      folder: 'PhotoIdentifier'
+      type: file
+      disableDeletion: false
+      allowUiUpdates: true
+      options:
+        path: /var/lib/grafana/dashboards
+---
+# ConfigMap for Grafana Dashboards
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+    component: monitoring
+data:
+  # PhotoIdentifier Overview Dashboard
+  photoidentifier-overview.json: |
+    {
+      "dashboard": {
+        "title": "PhotoIdentifier Overview",
+        "uid": "photoidentifier-overview",
+        "tags": ["photoidentifier"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Request Rate",
+            "type": "graph",
+            "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total[5m])) by (status)",
+                "legendFormat": "{{status}}"
+              }
+            ]
+          },
+          {
+            "title": "Response Time (p95)",
+            "type": "graph",
+            "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+                "legendFormat": "p95"
+              }
+            ]
+          },
+          {
+            "title": "Error Rate",
+            "type": "stat",
+            "gridPos": { "x": 0, "y": 8, "w": 6, "h": 4 },
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m]))",
+                "legendFormat": "Error Rate"
+              }
+            ]
+          },
+          {
+            "title": "Active Requests",
+            "type": "stat",
+            "gridPos": { "x": 6, "y": 8, "w": 6, "h": 4 },
+            "targets": [
+              {
+                "expr": "sum(http_requests_in_progress)",
+                "legendFormat": "Active"
+              }
+            ]
+          },
+          {
+            "title": "Service Uptime",
+            "type": "stat",
+            "gridPos": { "x": 12, "y": 8, "w": 6, "h": 4 },
+            "targets": [
+              {
+                "expr": "up{job=\"photoidentifier-web\"}",
+                "legendFormat": "Uptime"
+              }
+            ]
+          },
+          {
+            "title": "Pod Replicas",
+            "type": "stat",
+            "gridPos": { "x": 18, "y": 8, "w": 6, "h": 4 },
+            "targets": [
+              {
+                "expr": "sum(kube_deployment_status_replicas_available{deployment=\"photoidentifier-web\"})",
+                "legendFormat": "Replicas"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  # Database Performance Dashboard
+  database-performance.json: |
+    {
+      "dashboard": {
+        "title": "Database Performance",
+        "uid": "database-performance",
+        "tags": ["database", "postgres"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Connection Pool Usage",
+            "type": "graph",
+            "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+            "targets": [
+              {
+                "expr": "(pg_stat_database_numbackends / pg_settings_max_connections) * 100",
+                "legendFormat": "Usage %"
+              }
+            ]
+          },
+          {
+            "title": "Query Duration",
+            "type": "graph",
+            "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+            "targets": [
+              {
+                "expr": "rate(pg_stat_statements_total_exec_time_ms[5m])",
+                "legendFormat": "Duration"
+              }
+            ]
+          },
+          {
+            "title": "Database Size",
+            "type": "stat",
+            "gridPos": { "x": 0, "y": 8, "w": 12, "h": 4 },
+            "targets": [
+              {
+                "expr": "pg_database_size_bytes",
+                "legendFormat": "Size"
+              }
+            ]
+          },
+          {
+            "title": "Transactions per Second",
+            "type": "stat",
+            "gridPos": { "x": 12, "y": 8, "w": 12, "h": 4 },
+            "targets": [
+              {
+                "expr": "sum(rate(pg_stat_database_xact_commit[5m]))",
+                "legendFormat": "TPS"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  # Redis Performance Dashboard
+  redis-performance.json: |
+    {
+      "dashboard": {
+        "title": "Redis Performance",
+        "uid": "redis-performance",
+        "tags": ["redis", "cache"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Memory Usage",
+            "type": "graph",
+            "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+            "targets": [
+              {
+                "expr": "redis_memory_used_bytes",
+                "legendFormat": "Used"
+              },
+              {
+                "expr": "redis_memory_max_bytes",
+                "legendFormat": "Max"
+              }
+            ]
+          },
+          {
+            "title": "Operations per Second",
+            "type": "graph",
+            "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+            "targets": [
+              {
+                "expr": "rate(redis_commands_processed_total[5m])",
+                "legendFormat": "OPS"
+              }
+            ]
+          },
+          {
+            "title": "Hit Rate",
+            "type": "gauge",
+            "gridPos": { "x": 0, "y": 8, "w": 12, "h": 4 },
+            "targets": [
+              {
+                "expr": "redis_keyspace_hits / (redis_keyspace_hits + redis_keyspace_misses) * 100",
+                "legendFormat": "Hit Rate %"
+              }
+            ]
+          },
+          {
+            "title": "Connected Clients",
+            "type": "stat",
+            "gridPos": { "x": 12, "y": 8, "w": 12, "h": 4 },
+            "targets": [
+              {
+                "expr": "redis_connected_clients",
+                "legendFormat": "Clients"
+              }
+            ]
+          }
+        ]
+      }
+    }
+---
+# Grafana Admin Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-admin
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+    component: monitoring
+type: Opaque
+data:
+  # Base64 encoded admin credentials (change in production)
+  GF_SECURITY_ADMIN_USER: YWRtaW4=
+  GF_SECURITY_ADMIN_PASSWORD: YWRtaW4xMjM=
+---
+# PersistentVolumeClaim for Grafana
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+    component: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+---
+# Grafana Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: photoidentifier
+      component: grafana
+  template:
+    metadata:
+      labels:
+        app: photoidentifier
+        component: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:latest
+        ports:
+        - name: web
+          containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: grafana-admin
+              key: GF_SECURITY_ADMIN_USER
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: grafana-admin
+              key: GF_SECURITY_ADMIN_PASSWORD
+        - name: GF_INSTALL_PLUGINS
+          value: "grafana-piechart-panel"
+        - name: GF_SERVER_ROOT_URL
+          value: "https://grafana.photoidentifier.com"
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: grafana-dashboards-config
+          mountPath: /etc/grafana/provisioning/dashboards
+        - name: grafana-dashboards
+          mountPath: /var/lib/grafana/dashboards
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: grafana-storage
+        persistentVolumeClaim:
+          claimName: grafana-pvc
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasources
+      - name: grafana-dashboards-config
+        configMap:
+          name: grafana-dashboards-config
+      - name: grafana-dashboards
+        configMap:
+          name: grafana-dashboards
+---
+# Grafana Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+    component: monitoring
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: web
+  selector:
+    app: photoidentifier
+    component: grafana
+---
+# Grafana Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: photoidentifier
+  labels:
+    app: photoidentifier
+    component: monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - grafana.photoidentifier.com
+    secretName: grafana-tls
+  rules:
+  - host: grafana.photoidentifier.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
