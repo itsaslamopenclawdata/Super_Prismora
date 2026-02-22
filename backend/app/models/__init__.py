@@ -6,6 +6,12 @@ from app.models.nature import (
     BirdIdentification,
     InsectIdentification
 )
+from app.models.collectibles import (
+    CoinIdentification,
+    VinylIdentification,
+    CardIdentification,
+    BanknoteIdentification
+)
 
 __all__ = [
     "User",
@@ -17,4 +23,8 @@ __all__ = [
     "MushroomIdentification",
     "BirdIdentification",
     "InsectIdentification",
+    "CoinIdentification",
+    "VinylIdentification",
+    "CardIdentification",
+    "BanknoteIdentification",
 ]
