@@ -1,0 +1,9 @@
+{
+  "name": "@super-prismora/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./tailwind.config.ts",
+  "files": [
+    "*.ts"
+  ]
+}
