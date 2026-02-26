@@ -375,7 +375,7 @@ class TestSearchAndFilter:
         
         # Search
         self.page.fill('input[type="search"]', "flower")
-        self.page.press('input[type="search"]', "Enter')
+        self.page.press('input[type="search"]', "Enter")
         
         # Should show results
         expect(self.page.locator('.photo-grid')).to_be_visible()

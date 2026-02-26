@@ -195,7 +195,7 @@ class TestScreenReader:
         
         inputs = self.page.query_all('input:not([type="hidden"]):not([type="submit"])')
         
-        for input in inputs:
+        for inp in inputs:
             # Check for associated label
             input_id = input.get_attribute('id')
             
@@ -367,7 +367,7 @@ class TestForms:
         
         required_inputs = self.page.query_all('input[required]')
         
-        for input in required inputs:
+        for inp in required_inputs:
             # Should have aria-required or required attribute
             aria_required = input.get_attribute('aria-required')
             assert aria_required == 'true' or input.get_attribute('required'), \
