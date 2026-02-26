@@ -1,0 +1,148 @@
+# Staging PostgreSQL Deployment
+# Auto-generated: 2026-02-26
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-staging
+  namespace: superprismora-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-staging
+  template:
+    metadata:
+      labels:
+        app: postgres-staging
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        env:
+        - name: POSTGRES_DB
+          value: superprismora_staging
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: superprismora-secrets
+              key: DATABASE_USERNAME
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: superprismora-secrets
+              key: DATABASE_PASSWORD
+        ports:
+        - containerPort: 5432
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-staging-pvc
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-staging
+  namespace: superprismora-staging
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: postgres-staging
+---
+# PostgreSQL PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-staging-pvc
+  namespace: superprismora-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Staging Redis Deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-staging
+  namespace: superprismora-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-staging
+  template:
+    metadata:
+      labels:
+        app: redis-staging
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        command: ["redis-server", "--requirepass", "$(REDIS_PASSWORD)"]
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: superprismora-secrets
+              key: REDIS_PASSWORD
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-staging-pvc
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-staging
+  namespace: superprismora-staging
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis-staging
+---
+# Redis PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-staging-pvc
+  namespace: superprismora-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi

@@ -1,0 +1,180 @@
+# Staging Application Deployment
+# Auto-generated: 2026-02-26
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superprismora-web-staging
+  namespace: superprismora-staging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: superprismora-web
+      environment: staging
+  template:
+    metadata:
+      labels:
+        app: superprismora-web
+        environment: staging
+    spec:
+      containers:
+      - name: web
+        image: superprismora/web:latest
+        env:
+        - name: NODE_ENV
+          value: staging
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: superprismora-secrets
+              key: DATABASE_URL
+        - name: REDIS_URL
+          value: "redis://:$(REDIS_PASSWORD)@redis-staging:6379"
+        - name: NEXTAUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: superprismora-secrets
+              key: NEXTAUTH_SECRET
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+# Backend API Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superprismora-api-staging
+  namespace: superprismora-staging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: superprismora-api
+      environment: staging
+  template:
+    metadata:
+      labels:
+        app: superprismora-api
+        environment: staging
+    spec:
+      containers:
+      - name: api
+        image: superprismora/api:latest
+        env:
+        - name: ENVIRONMENT
+          value: staging
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: superprismora-secrets
+              key: DATABASE_URL
+        - name: REDIS_URL
+          value: "redis://:$(REDIS_PASSWORD)@redis-staging:6379"
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+# Staging Services
+apiVersion: v1
+kind: Service
+metadata:
+  name: superprismora-web-staging
+  namespace: superprismora-staging
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    app: superprismora-web
+    environment: staging
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: superprismora-api-staging
+  namespace: superprismora-staging
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: superprismora-api
+    environment: staging
+---
+# Staging Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: superprismora-staging
+  namespace: superprismora-staging
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  tls:
+  - hosts:
+    - staging.superprismora.com
+    - api-staging.superprismora.com
+    secretName: superprismora-staging-tls
+  rules:
+  - host: staging.superprismora.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: superprismora-web-staging
+            port:
+              number: 80
+  - host: api-staging.superprismora.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: superprismora-api-staging
+            port:
+              number: 80

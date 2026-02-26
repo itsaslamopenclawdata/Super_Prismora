@@ -1,0 +1,76 @@
+# Staging Namespace
+# Auto-generated: 2026-02-26
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: superprismora-staging
+  labels:
+    environment: staging
+    app: superprismora
+---
+# Staging ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superprismora-config
+  namespace: superprismora-staging
+data:
+  # Application Configuration
+  NODE_ENV: "staging"
+  NEXT_PUBLIC_API_URL: "https://api-staging.superprismora.com"
+  NEXT_PUBLIC_WS_URL: "wss://ws-staging.superprismora.com"
+  
+  # Database Configuration
+  DATABASE_HOST: "postgres-staging"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "superprismora_staging"
+  DATABASE_POOL_MIN: "2"
+  DATABASE_POOL_MAX: "10"
+  
+  # Redis Configuration
+  REDIS_HOST: "redis-staging"
+  REDIS_PORT: "6379"
+  
+  # MinIO Configuration
+  MINIO_ENDPOINT: "minio-staging:9000"
+  MINIO_BUCKET: "superprismora-staging"
+  
+  # Kafka Configuration
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-staging:9092"
+  KAFKA_TOPIC_PREFIX: "staging"
+  
+  # Feature Flags
+  ENABLE_ANALYTICS: "true"
+  ENABLE_NOTIFICATIONS: "true"
+  ENABLE_AI_FEATURES: "true"
+  
+  # Logging
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+---
+# Staging Secrets (Reference - actual values should be in sealed secrets)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: superprismora-secrets
+  namespace: superprismora-staging
+type: Opaque
+stringData:
+  # Database credentials (replace with actual values)
+  DATABASE_USERNAME: "superprismora_staging_user"
+  DATABASE_PASSWORD: "CHANGE_ME"
+  
+  # Redis password (replace with actual values)
+  REDIS_PASSWORD: "CHANGE_ME"
+  
+  # JWT secrets (replace with actual values)
+  JWT_SECRET: "CHANGE_ME"
+  NEXTAUTH_SECRET: "CHANGE_ME"
+  
+  # API keys (replace with actual values)
+  OPENAI_API_KEY: "CHANGE_ME"
+  ANTHROPIC_API_KEY: "CHANGE_ME"
+  
+  # MinIO credentials (replace with actual values)
+  MINIO_ACCESS_KEY: "CHANGE_ME"
+  MINIO_SECRET_KEY: "CHANGE_ME"
