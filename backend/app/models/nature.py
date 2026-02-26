@@ -29,7 +29,7 @@ class PlantIdentification(Base):
     species = Column(String(255))
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Plant characteristics
@@ -72,7 +72,7 @@ class MushroomIdentification(Base):
     order_mycology = Column(String(255))  # 'order' is a reserved word
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Mushroom characteristics
@@ -117,7 +117,7 @@ class BirdIdentification(Base):
     order_bird = Column(String(255))  # 'order' is a reserved word
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Bird characteristics
@@ -165,7 +165,7 @@ class InsectIdentification(Base):
     class_insect = Column(String(255))
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Insect characteristics

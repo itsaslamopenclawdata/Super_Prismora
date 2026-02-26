@@ -4,7 +4,7 @@ These are the fundamental tables that support all apps in the platform.
 """
 from sqlalchemy import (
     Column, String, Integer, BigInteger, Text, DECIMAL, DateTime,
-    ForeignKey, JSON, ARRAY, CheckConstraint, Index, func
+    ForeignKey, JSON, ARRAY, Index
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -70,7 +70,7 @@ class Photo(Base):
         String(50),
         default="pending",
         nullable=False,
-        CheckConstraint("status IN ('pending', 'processing', 'completed', 'failed')")
+        check="status IN ('pending', 'processing', 'completed', 'failed')"
     )
 
     # Indexes
@@ -95,7 +95,7 @@ class PhotoIdentification(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     photo_id = Column(UUID(as_uuid=True), ForeignKey("photos.id", ondelete="CASCADE"), nullable=False, index=True)
     model = Column(String(255), nullable=False)
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     labels = Column(JSONB, default=list)
     objects = Column(JSONB, default=list)
     faces = Column(JSONB, default=list)

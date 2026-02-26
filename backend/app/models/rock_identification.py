@@ -28,7 +28,7 @@ class RockIdentification(Base):
     variety = Column(String(255))
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Rock classification
@@ -105,7 +105,7 @@ class MineralIdentification(Base):
     variety = Column(String(255))
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Crystal structure

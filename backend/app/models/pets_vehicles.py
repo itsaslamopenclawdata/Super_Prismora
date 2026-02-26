@@ -27,7 +27,7 @@ class DogIdentification(Base):
     origin_country = Column(String(100))
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Physical characteristics
@@ -86,7 +86,7 @@ class CatIdentification(Base):
     origin_country = Column(String(100))
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Physical characteristics
@@ -145,7 +145,7 @@ class VehicleIdentification(Base):
     trim = Column(String(100))  # SE, GT, Luxury, etc.
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Vehicle classification
@@ -208,7 +208,7 @@ class FishIdentification(Base):
     fish_type = Column(String(100))  # freshwater, saltwater, brackish
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Taxonomic classification

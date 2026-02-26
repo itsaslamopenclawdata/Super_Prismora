@@ -28,7 +28,7 @@ class CoinIdentification(Base):
     year = Column(Integer)
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Coin specifications
@@ -85,7 +85,7 @@ class VinylIdentification(Base):
     year_released = Column(Integer)
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Record specifications
@@ -153,7 +153,7 @@ class CardIdentification(Base):
     special_edition = Column(Boolean, default=False)
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Card attributes
@@ -209,7 +209,7 @@ class BanknoteIdentification(Base):
     country = Column(String(100))
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Banknote specifications

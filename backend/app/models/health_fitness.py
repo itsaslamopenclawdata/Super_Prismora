@@ -27,7 +27,7 @@ class CaloIdentification(Base):
     cuisine_type = Column(String(100))  # Italian, Mexican, Asian, American, etc.
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Serving information
@@ -82,7 +82,7 @@ class FruitIdentification(Base):
     variety = Column(String(255))  # e.g., "Gala", "Fuji", "Honeycrisp"
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Botanical information
@@ -145,7 +145,7 @@ class LazyFitIdentification(Base):
     activity_type = Column(String(100))  # exercise, pose, movement, stretch
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Activity details
@@ -203,7 +203,7 @@ class MuscleFitIdentification(Base):
     identification_type = Column(String(50))  # exercise, muscle, anatomy
 
     # Identification details
-    confidence = Column(DECIMAL(3, 2), nullable=False, CheckConstraint("confidence >= 0 AND confidence <= 1"))
+    confidence = Column(DECIMAL(3, 2), nullable=False, check="confidence >= 0 AND confidence <= 1")
     model_version = Column(String(50))
 
     # Exercise-specific fields
